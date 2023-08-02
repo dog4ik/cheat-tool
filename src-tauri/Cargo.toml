@@ -19,6 +19,9 @@ serde_json = "1.0"
 tokio = { version = "1.29.1", features = ["full"] }
 bytes = { version = "1.4.0", features = ["serde"] }
 nix = "0.26.2"
+sqlx = { version = "0.7.1", features = ["uuid", "sqlite", "runtime-tokio", "macros"] }
+dotenvy = "0.15.7"
+evdev = { version = "0.12.1", features = ["tokio"] }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
