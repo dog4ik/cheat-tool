@@ -1,5 +1,6 @@
+import { useNavigate } from "@solidjs/router";
 import { createSignal, onMount } from "solid-js";
-import { invokeRust, ProcessListItem } from "../types";
+import { invokeRust, ProcessListItem } from "../RustBridge";
 
 function SelectProcessPage() {
   const [processId, setProcessId] = createSignal("");
@@ -7,6 +8,7 @@ function SelectProcessPage() {
   const [error, setError] = createSignal("");
   const [selectedProcess, setSelectedProcess] = createSignal<ProcessListItem>();
   const [processes, setProcesses] = createSignal<ProcessListItem[]>([]);
+  const navigate = useNavigate();
 
   async function setProcess() {
     let selected = selectedProcess();
@@ -34,11 +36,11 @@ function SelectProcessPage() {
   });
 
   return (
-    <div class="w-screen bg-neutral-900 h-screen min-h-screen flex flex-col gap-5 text-white justify-center items-center">
+    <div class="w-full bg-neutral-900 h-screen min-h-screen flex flex-col gap-5 text-white justify-center items-center">
       <div class="flex gap-4 items-center">
         <h1 class="text-4xl">Select process</h1>
-        <button onClick={() => handleInput(name())} class="text-xl">
-          Refresh
+        <button onClick={() => handleInput(name())} class="p-4">
+          <img src="refresh.svg" />
         </button>
       </div>
       <ul class="overflow-y-scroll w-5/6 h-2/3">
@@ -47,7 +49,7 @@ function SelectProcessPage() {
             class={`grid grid-cols-2 cursor-pointer justify-between items-center py-3 px-5 ${
               process.pid === selectedProcess()?.pid
                 ? "text-black bg-white"
-                : "hover:bg-neutral-800"
+                : "hover:bg-neutral-950"
             }`}
             onClick={() => setSelectedProcess(process)}
           >
@@ -62,7 +64,7 @@ function SelectProcessPage() {
         onSubmit={(e) => {
           e.preventDefault();
           setProcess();
-          window.location.assign("process");
+          navigate("process");
         }}
       >
         <input
