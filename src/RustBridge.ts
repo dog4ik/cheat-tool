@@ -23,7 +23,7 @@ export type Value = {
   size: ValueSize;
 };
 
-export type RustFuctions = {
+export type RustFunctions = {
   select_process: (args: { pid: number }) => string;
   get_process_list: (args: { query: string }) => ProcessListItem[];
   get_process_memory: (args: {
@@ -75,9 +75,9 @@ export async function emitRustEvent<T extends keyof EmitEvents>(
   await emit(eventName, payload);
 }
 
-export async function invokeRust<T extends keyof RustFuctions>(
+export async function invokeRust<T extends keyof RustFunctions>(
   cmd: T,
-  invokeArgs: Parameters<RustFuctions[T]>[0]
-): Promise<ReturnType<RustFuctions[T]>> {
-  return invoke<ReturnType<RustFuctions[T]>>(cmd, invokeArgs);
+  invokeArgs: Parameters<RustFunctions[T]>[0]
+): Promise<ReturnType<RustFunctions[T]>> {
+  return invoke<ReturnType<RustFunctions[T]>>(cmd, invokeArgs);
 }
