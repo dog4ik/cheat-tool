@@ -11,6 +11,7 @@ const SideItem = (props: SideItemProps) => {
     <A
       href={props.href}
       class="flex flex-col items-center hover:bg-neutral-800 duration-200 justify-center"
+      activeClass="bg-sky-500 hover:bg-sky-400"
     >
       {props.children}
       <span>{props.name}</span>
