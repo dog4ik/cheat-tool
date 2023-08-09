@@ -64,7 +64,7 @@ function SelectProcessPage() {
         onSubmit={(e) => {
           e.preventDefault();
           setProcess();
-          navigate("process");
+          navigate("/process");
         }}
       >
         <input
