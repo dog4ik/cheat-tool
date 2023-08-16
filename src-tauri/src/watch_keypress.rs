@@ -20,10 +20,8 @@ impl Display for ParseError {
 fn parse_code(line: &str) -> Result<bool, ParseError> {
     let code: u32 = line
         .split_whitespace()
-        .into_iter()
-        .skip(2)
-        .next()
-        .ok_or_else(|| ParseError::UnknownError)?
+        .nth(2)
+        .ok_or(ParseError::UnknownError)?
         .trim()
         .parse()
         .map_err(|_| ParseError::UnknownError)?;
@@ -50,16 +48,14 @@ pub async fn get_key_press(key_code: u32) -> Receiver<bool> {
             let reader = BufReader::new(stdout);
             let mut lines = reader.lines();
             while let Some(line) = lines.next_line().await.unwrap() {
-                if let Some((key, value)) = line.split_once(":") {
+                if let Some((key, value)) = line.split_once(':') {
                     if key.trim() == "detail" && value.trim().parse::<u32>().unwrap() == key_code {
                         sender.send(is_pressed).await.unwrap();
                     }
+                } else if let Ok(val) = parse_code(line.trim()) {
+                    is_pressed = val;
                 } else {
-                    if let Ok(val) = parse_code(line.trim()) {
-                        is_pressed = val;
-                    } else {
-                        continue;
-                    }
+                    continue;
                 }
             }
         }

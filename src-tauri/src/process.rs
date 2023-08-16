@@ -231,9 +231,9 @@ fn get_memory_chunks(pid: Pid) -> Result<Vec<MemoryChunk>, ProcessError> {
         std::fs::read_to_string(&maps_path).map_err(|_| ProcessError::NotFoundError)?;
     let lines = maps_content.lines();
     for line in lines {
-        let mut chunks = line.split(" ");
-        let range = chunks.nth(0).expect("to exist");
-        let (start, finish) = range.split_once("-").expect("to exist");
+        let mut chunks = line.split(' ');
+        let range = chunks.next().expect("to exist");
+        let (start, finish) = range.split_once('-').expect("to exist");
         let location = chunks.last().expect("to exist");
         if location != "[heap]" && location != "[stack]" {
             continue;
@@ -303,13 +303,11 @@ pub fn find_processes(query: &str) -> Vec<ProcessListItem> {
         if let Ok(process) = process && process
                 .metadata()
                 .map_or(false, |metadata| metadata.is_dir())
-                == true
                 && process
                     .file_name()
                     .to_string_lossy()
                     .chars()
-                    .into_iter()
-                    .all(|x| x.is_digit(10))
+                    .all(|x| x.is_ascii_digit())
             {
                 let status = std::fs::read_to_string(format!(
                     "/proc/{}/status",
