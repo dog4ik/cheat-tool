@@ -3,6 +3,7 @@
 #![feature(iter_array_chunks)]
 #![feature(let_chains)]
 #![feature(array_windows)]
+pub mod db;
 pub mod emit_keypress;
 pub mod process;
 pub mod watch_keypress;
