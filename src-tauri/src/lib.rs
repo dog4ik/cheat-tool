@@ -7,6 +7,7 @@ pub mod api;
 pub mod db;
 pub mod emit_keypress;
 pub mod process;
+pub mod scripts;
 pub mod watch_keypress;
 pub use process::Process;
 pub use process::ProcessError;
