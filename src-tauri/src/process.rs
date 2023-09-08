@@ -185,6 +185,11 @@ impl Process {
         }
     }
 
+    /// Gets pid
+    pub fn get_pid(&self) -> Pid {
+        return self.pid;
+    }
+
     /// Resets memory state with latest state
     pub fn refresh_memory(&mut self) -> Result<(), ProcessError> {
         self.memory = get_memory_chunks(self.pid)?;
@@ -261,7 +266,7 @@ impl Process {
 
     /// Watches single value
     pub async fn watch_value(
-        &self,
+        pid: Pid,
         value: &Variable,
         timeout: u64,
     ) -> Result<(Receiver<u32>, AbortHandle), ProcessError> {
@@ -269,14 +274,13 @@ impl Process {
             len: value.size.into(),
             base: value.position,
         }];
-        let id = self.pid;
         let (sender, reciever) = channel(10);
         let handle = tokio::spawn(async move {
             let mut buffer = [0u8; 4];
             let mut prev = 0;
             loop {
                 let mut iov = [IoSliceMut::new(&mut buffer)];
-                process_vm_readv(id, &mut iov, &remote_iov).expect("Failed to read from memory");
+                process_vm_readv(pid, &mut iov, &remote_iov).expect("Failed to read from memory");
                 //TODO: Figure out how to handle situations we dont know type of desired value
                 let val = u32::from_le_bytes(buffer);
                 if val != prev {

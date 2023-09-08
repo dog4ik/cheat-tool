@@ -1,7 +1,8 @@
 use std::sync::Mutex;
 
+use nix::unistd::Pid;
 use serde::{Deserialize, Serialize};
-use tauri::{self, State};
+use tauri::{self, AppHandle, Manager, State};
 
 use crate::{
     db::{ClientProcesses, ClientVariables, Db, DbSettings, DbVariables},
@@ -118,6 +119,35 @@ async fn write_value(
             .map_err(|_| "failed to write value")?;
     }
     Ok(())
+}
+
+#[tauri::command]
+async fn watch_value(
+    app_handle: AppHandle,
+    app_state: State<'_, AppState>,
+    position: usize,
+    size: usize,
+) -> Result<(), ()> {
+    let process = app_state.process.lock().unwrap();
+    let process = process.as_ref().unwrap();
+    let pid = process.pid;
+    tokio::spawn(async move {
+        let (mut reciever, abort) = Process::watch_value(
+            pid,
+            &Variable {
+                position,
+                size: size.try_into().expect("to convert"),
+            },
+            10,
+        )
+        .await
+        .unwrap();
+        while let Some(val) = reciever.recv().await {
+            app_handle.emit_all("value_update", val).unwrap();
+        }
+        app_handle.once_global("unlisten_value", move |_| abort.abort());
+    });
+    return Ok(());
 }
 
 #[tauri::command]
@@ -331,6 +361,7 @@ pub async fn run() {
             scan_next,
             reset_state,
             write_value,
+            watch_value,
             get_neighbors,
             update_settings,
             get_current_process,

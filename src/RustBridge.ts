@@ -16,6 +16,41 @@ export type RustSettings = {
   value_size: ValueSize;
 };
 
+export type Process = {
+  pid: number;
+  name: string;
+};
+
+export type DbProcess = {
+  id: string;
+  name: string;
+};
+
+export type DbVariable = {
+  id: number;
+  name: string;
+  description?: string;
+  size: number;
+  offset: number;
+  process_id: number;
+};
+
+export type ClientProcess = {
+  name: string;
+};
+
+export type ClientVariable = {
+  name: string;
+  description?: string;
+  size: number;
+  offset: number;
+  process_id: number;
+};
+
+export type DbSettings = {
+  sizing: number;
+};
+
 export type ValueSize = 1 | 2 | 4;
 
 export type Value = {
@@ -31,15 +66,11 @@ export type RustFunctions = {
     value: number;
   }) => MemoryChunk[];
   refresh_memory: () => void;
-  set_desired_value: (args: { value: number }) => void;
-  get_value_from_memory: (args: {
+  populate_buffer_with_value: (args: {
     value: number;
     sizing: number;
   }) => MemoryChunk[];
-  expect_change: () => MemoryChunk[];
-  expect_no_change: () => MemoryChunk[];
-  reset_values: () => void;
-  reset_state: () => void;
+  expect_change: (args: { is_changed: boolean }) => MemoryChunk[];
   scan_next: (args: { value: number }) => MemoryChunk[];
   watch_value: (args: { variable: Value }) => number;
   watch_values: (args: { variables: Value[] }) => number;
@@ -48,6 +79,16 @@ export type RustFunctions = {
   change_settings: (args: { settings: RustSettings }) => void;
   press_space: () => void;
   bhop: (args: { size: number; offset: number }) => void;
+  get_current_process: () => Process | null;
+  // db stuff
+  save_variable: (args: { variable: ClientVariable }) => void;
+  get_variable_by_id: (args: { id: number }) => DbVariable;
+  delete_variable_by_id: (args: { id: number }) => void;
+  get_variables: (args: { take?: number; skip?: number }) => DbVariable[];
+  save_process: (args: { process: ClientProcess }) => void;
+  delete_process: (args: { id: number }) => void;
+  get_settings: () => DbSettings;
+  save_settings: (args: { settings: RustSettings }) => void;
 };
 
 export type RustEvents = {
@@ -64,8 +105,7 @@ export async function useRustEvent<T extends keyof RustEvents>(
   eventName: T,
   cb: EventCallback<RustEvents[T]>
 ): Promise<UnlistenFn> {
-  const unlisten = await listen(eventName, cb);
-  return unlisten;
+  return await listen(eventName, cb);
 }
 
 export async function emitRustEvent<T extends keyof EmitEvents>(

@@ -1,19 +1,21 @@
 use std::sync::Arc;
 
+use nix::unistd::Pid;
+
 use crate::{emit_keypress::emit_keyboard_event, process::Variable, watch_keypress, Process};
 
-pub async fn bhop(process: Process, size: usize, offset: usize) -> Result<(), String> {
+pub async fn bhop(pid: Pid, size: usize, offset: usize) -> Result<(), String> {
     println!("started bhop");
-    let (mut receiver, abort) = process
-        .watch_value(
-            &Variable {
-                position: offset,
-                size: size.try_into().unwrap(),
-            },
-            10,
-        )
-        .await
-        .unwrap();
+    let (mut receiver, abort) = Process::watch_value(
+        pid,
+        &Variable {
+            position: offset,
+            size: size.try_into().unwrap(),
+        },
+        10,
+    )
+    .await
+    .unwrap();
     let key_event_sender = emit_keyboard_event().await.expect("to work");
     let is_space_pressed = Arc::new(tokio::sync::Mutex::new(false));
     let is_on_ground = Arc::new(tokio::sync::Mutex::new(true));

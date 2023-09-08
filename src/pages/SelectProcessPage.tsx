@@ -1,6 +1,7 @@
 import { useNavigate } from "@solidjs/router";
 import { createSignal, onMount } from "solid-js";
 import { invokeRust, ProcessListItem } from "../RustBridge";
+import { useCurrentProcess } from "../context/CurrentProcessProvider";
 
 function SelectProcessPage() {
   const [processId, setProcessId] = createSignal("");
@@ -9,16 +10,20 @@ function SelectProcessPage() {
   const [selectedProcess, setSelectedProcess] = createSignal<ProcessListItem>();
   const [processes, setProcesses] = createSignal<ProcessListItem[]>([]);
   const navigate = useNavigate();
+  const [, currentProcessFunctions] = useCurrentProcess();
 
   async function setProcess() {
     let selected = selectedProcess();
-    if (selected)
+    if (selected) {
       await invokeRust("select_process", { pid: selected.pid })
         .then((data) => {
           setProcessId(data);
           setError("");
         })
         .catch((err) => setError(err));
+      currentProcessFunctions.setIsLive(true);
+      currentProcessFunctions.setProcess(selected);
+    }
   }
 
   async function getProcessList(query: string) {
